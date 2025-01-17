@@ -3,25 +3,24 @@ const express = require("express");
 const app = express();
 
 app.use(express.static("public"));
-// require("dotenv").config();
 
-const serverPort = process.env.PORT || 3000;
+
+const serverPort =  3000;
 const server = http.createServer(app);
 const WebSocket = require("ws");
 
 let keepAliveId;
 
-const wss =
-  process.env.NODE_ENV === "production"
-    ? new WebSocket.Server({ server })
-    : new WebSocket.Server({ port: 5001 });
+const wss = new WebSocket.Server({ server })
+ 
 
 server.listen(serverPort);
-console.log(`Server started on port ${serverPort} in stage ${process.env.NODE_ENV}`);
+console.log(`Server started on port ${serverPort}`);
 
 wss.on("connection", function (ws, req) {
   console.log("Connection Opened");
   console.log("Client size: ", wss.clients.size);
+
 
   if (wss.clients.size === 1) {
     console.log("first connection. starting keepalive");
@@ -34,7 +33,7 @@ wss.on("connection", function (ws, req) {
       console.log('keepAlive');
       return;
     }
-    broadcast(ws, stringifiedData, false);
+    broadcast(ws, stringifiedData, true);
   });
 
   ws.on("close", (data) => {
@@ -76,6 +75,12 @@ const broadcast = (ws, message, includeSelf) => {
     });
   }, 50000);
 };
+
+
+app.post('/login', (req, res) => {
+  console.log(req.data);
+  res.send({'success' : true, 'auth_token' : 'someToken'});
+});
 
 
 app.get('/', (req, res) => {
